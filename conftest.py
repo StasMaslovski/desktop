@@ -3,15 +3,14 @@ from appium import webdriver
 from page_objects.base_page import BasePageObject
 import allure
 import os
+from config import Config
 
 
 @pytest.fixture(scope='function')
 def driver():
-    desired_capabilities = {
-        "app": "C:\\Users\\anduser\\AppData\\Local\\Reverso\\Reverso\\Reverso.exe"}  # path to application ".exe" file
     driver = webdriver.Remote(
-        command_executor='http://127.0.0.1:4723/wd/hub',
-        desired_capabilities=desired_capabilities)
+        command_executor=Config.command_executor.value,
+        desired_capabilities=Config.desired_capabilities.value)
     yield driver
     driver.close_app()
     BasePageObject(driver).accept_alert()

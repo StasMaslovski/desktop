@@ -1,21 +1,18 @@
 from abc import ABC
 from typing import Tuple
-
 from appium.webdriver import WebElement
 from selenium.webdriver.common.by import By
 from appium.webdriver.webdriver import WebDriver
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 from selenium.webdriver.support import expected_conditions as ec
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.common.keys import Keys
-
-# from src.services.auto_test.clients.appium_client.unified_selector import UnifiedSelector
 
 
 class BasePageObject(ABC):
     def __init__(self, driver: WebDriver):
         self.driver = driver
-        self.wait = WebDriverWait(driver, 20)
+        self.wait = WebDriverWait(driver, 5)
         self.fluent_wait = WebDriverWait(
             self.driver, timeout=7, poll_frequency=1, ignored_exceptions=[NoSuchElementException]
         )
@@ -23,7 +20,11 @@ class BasePageObject(ABC):
         self.unique_element_locator = None
 
     def is_page_open(self):
-        return True if self.fluent_wait.until(ec.presence_of_element_located(self.unique_element_locator)) else False
+        try:
+            self.fluent_wait.until(ec.presence_of_element_located(self.unique_element_locator))
+            return True
+        except TimeoutException:
+            return False
 
     def _get_visible_element(self, locator) -> WebElement:
         return self.wait.until(ec.visibility_of_element_located(locator))
@@ -44,5 +45,5 @@ class BasePageObject(ABC):
         try:
             self._get_visible_element((By.NAME, f"{text}"))
             return True
-        except NoSuchElementException:
+        except TimeoutException:
             return False
